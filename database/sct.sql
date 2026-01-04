@@ -1,0 +1,13 @@
+-- 创建数据库（若不存在）
+CREATE DATABASE IF NOT EXISTS todo_db DEFAULT CHARSET utf8mb4;
+USE todo_db;
+
+-- 创建todoList表
+CREATE TABLE IF NOT EXISTS `todolist` (
+  `AutoID` INT NOT NULL AUTO_INCREMENT COMMENT '事项ID',
+  `Title` VARCHAR(50) COMMENT '事项名称',
+  `Status` INT NOT NULL DEFAULT 0 COMMENT '状态（0:未完成 1:已完成）',
+  `IsDelete` INT NOT NULL DEFAULT 0 COMMENT '是否删除（0:未删除 1:已删除）',
+  `CreateTime` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '记录添加时间',
+  PRIMARY KEY (`AutoID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+    <style>
+        table {border-collapse: collapse; width: 80%; margin: 20px 0;}
+        th, td {border: 1px solid #ccc; padding: 8px; text-align: left;}
+        .btn {padding: 5px 10px; margin: 0 2px; cursor: pointer;}
+    </style>
+</head>
+<body>
+    <h2>AngularJS TodoList（Flask版）</h2>
+
+    <!-- 添加新事项 -->
+    <input type="text" id="newTitle" placeholder="type something here...">
+    <button class="btn" onclick="addTodo()">Add New Item</button>
+
+    <!-- 筛选按钮 -->
+    <div style="margin: 10px 0;">
+        <button class="btn" onclick="filterTodo('all')">All ({{ total }})</button>
+        <button class="btn" onclick="filterTodo('done')">Done ({{ doneCount }})</button>
+        <button class="btn" onclick="filterTodo('active')">Active ({{ activeCount }})</button>
+    </div>
+
+    <!-- Todo列表 -->
+    <table>
+        <tr>
+            <<th>#</</th>
+            <<th>Title</</th>
+            <<th>CreateTime</</th>
+            <<th>Control</</th>
+        </tr>
+        <tbody id="todoList">
+            {% for todo in todos %}
+            <tr data-id="{{ todo.AutoID }}" class="todo-item {% if todo.Status == 1 %}done{% else %}active{% endif %}">
+                <td>{{ todo.AutoID }}</td>
+                <td>{{ todo.Title }}</td>
+                <td>{{ todo.CreateTime }}</td>
+                <td>
+                    {% if todo.Status == 0 %}
+                    <button class="btn" onclick="updateStatus({{ todo.AutoID }}, 1)">Done</button>
+                    {% else %}
+                    <button class="btn" onclick="updateStatus({{ todo.AutoID }}, 0)">Undo</button>
+                    {% endif %}
+                    <button class="btn" onclick="editTodo({{ todo.AutoID }}, '{{ todo.Title }}')">Edit</button>
+                    <button class="btn" onclick="deleteTodo({{ todo.AutoID }})">Remove</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        // 初始化统计数据
+        const total = {{ total }};
+        const doneCount = {{ doneCount }};
+        const activeCount = {{ activeCount }};
+
+        // 添加Todo
+        function addTodo() {
+            const title = document.getElementById('newTitle').value.trim();
+            if (!title) return alert('请输入事项名称！');
+
+            fetch('/add', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({Title: title})
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.code === 200) window.location.reload();
+              });
+        }
+
+        // 更新状态（Done/Undo）
+        function updateStatus(id, status) {
+            fetch('/update_status', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({AutoID: id, Status: status})
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.code === 200) window.location.reload();
+              });
+        }
+
+        // 编辑Todo
+        function editTodo(id, oldTitle) {
+            const newTitle = prompt('修改事项名称：', oldTitle);
+            if (!newTitle) return;
+
+            fetch('/edit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({AutoID: id, Title: newTitle})
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.code === 200) window.location.reload();
+              });
+        }
+
+        // 删除Todo（逻辑删除）
+        function deleteTodo(id) {
+            if (!confirm('确定删除该事项吗？')) return;
+
+            fetch('/delete', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({AutoID: id})
+            }).then(res => res.json())
+              .then(data => {
+                  if (data.code === 200) window.location.reload();
+              });
+        }
+
+        // 筛选Todo
+        function filterTodo(type) {
+            const items = document.querySelectorAll('.todo-item');
+            items.forEach(item => {
+                if (type === 'all') item.style.display = 'table-row';
+                else if (type === 'done') item.style.display = item.classList.contains('done') ? 'table-row' : 'none';
+                else if (type === 'active') item.style.display = item.classList.contains('active') ? 'table-row' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>
